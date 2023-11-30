@@ -11,7 +11,6 @@ Algoritmos y Estructuras de Datos
 Universidad del Rosario, 2023
 
 */
-
 #include<iostream>
 
 using namespace std;
@@ -284,58 +283,64 @@ public:
     }
     
 };
-
-class Mazo{
+class Mazo {
 private:
-    string suit[52] = {"AC","2C","3C","4C","5C","6C","7C","8C","9C","10C","JC","QC","KC","AD","2D","3D","4D","5D","6D","7D","8D","9D","10D","JD","QD","KD","AT","2T","3T","4T","5T","6T","7T","8T","9T","10T","JT","QT","KT","AP","2P","3P","4P","5P","6P","7P","8P","9P","10P","JP","QP","KP"}; //Todas las cartas disponibles
+    string suit[52] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "10C", "JC", "QC", "KC", "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "10D", "JD", "QD", "KD", "AT", "2T", "3T", "4T", "5T", "6T", "7T", "8T", "9T", "10T", "JT", "QT", "KT", "AP", "2P", "3P", "4P", "5P", "6P", "7P", "8P", "9P", "10P", "JP", "QP", "KP"};
+
     Pila<string> mazo;
     int size;
-    
+
 public:
-    Mazo(){
+    Mazo() {
         size = 52;
-        for (int i = 0; i < size; i++){
+        for (int i = 0; i < size; i++) {
             mazo.push(suit[i]);
         }
     }
-    Mazo(int tam, bool shuffled){
+
+    Mazo(int tam, bool shuffled) {
         size = tam;
-        if (shuffled == true){
-            for (int i = 0; i < size; i++){
-                mazo.push(suit[rand()%52]);
+        if (shuffled) {
+            std::srand(static_cast<unsigned int>(time(0)));  // Cambia time(nullptr) por std::time(0)
+
+            string aux[52];
+            for (int i = 0; i < size; i++) {
+                aux[i] = suit[i];
             }
-        }else{
-            for (int i = 0; i < size; i++){
+
+            for (int i = size - 1; i > 0; i--) {
+                int j = std::rand() % (i + 1);
+                std::swap(aux[i], aux[j]);
+            }
+
+            for (int i = 0; i < size; i++) {
+                mazo.push(aux[i]);
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
                 mazo.push(suit[i]);
-            }   
+            }
         }
     }
-    
-    void print(){
+
+    void print() {
         mazo.print();
     }
     
-    void shuffle(){
-        Lista<string> temp;
-        int rand_seq[size]; // Secuencia de números aleatorios no repetitivos
+    void print_oculto(int num_rev){
+        // num_rev guarda cuántas cartas de la parte de arriba de la pila están destapadas
         
-        for (int i = 0; i<size; i++){
-            rand_seq[i] = i;
-        }
-        
-        for (int i = 0; i<size; i++){
-            temp.add(mazo.pop());
-        }
-        
-        for (int i = 0; i<size; i++){
-        
-        }
     }
+    
+    void repartir(int num_cartas, int num_jugadores){
+        
+    }
+    
+    void repartir
 };
 
-int main()
-{
-    Mazo m(11, false);
+int main() {
+    Mazo m(52, true);
     m.print();
     return 0;
 }
