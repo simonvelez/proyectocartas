@@ -11,7 +11,11 @@ Algoritmos y Estructuras de Datos
 Universidad del Rosario, 2023
 
 */
+
+
 #include<iostream>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 
@@ -332,6 +336,16 @@ public:
         mazo.push(carta);
     }
     
+    string remover(){
+        size--;
+        return mazo.pop();
+    }
+    
+    void vaciar(){
+        mazo.clear();
+        size = 0;
+    }
+    
     int puntaje(){ //Suma el valor de las cartas
         int total = 0;
         int numA = 0; //Se guarda aparte la cantidad de A en el mazo, para después ajustar si vale 1 u 11
@@ -363,16 +377,224 @@ public:
             numA--;
         }
         return total;
-        
+    }
+    int get_size(){
+        return size;
     }
 };
 
+class Jugador{
+   private:
+   Mazo mazo; //El jugador inicia con un mazo vacío
+   int fichas;
+   int puntaje;
+   
+   public:
+    Jugador() {
+       fichas = 100;
+       puntaje = 0;
+       mazo.vaciar();
+    }
+    void print(){
+        cout<<"- - - - - - - - - - - - -"<<endl;
+        cout<<"Tus cartas: ";
+        mazo.print();
+        cout<<"Tu puntaje actual es: "<<puntaje<<endl;
+    }
+    Mazo get_mazo(){
+       return mazo;
+    }
+    int get_fichas(){
+       return fichas;
+    }
+    int get_puntaje(){
+       return puntaje;
+    }
+    void setFichas(int nuevasFichas) {
+        fichas = nuevasFichas;
+    }
+    
+    void setPuntaje(int nuevoPuntaje) {
+        puntaje = nuevoPuntaje;
+    }
+    
+    void addCartaAMazo(string carta) {
+        mazo.add(carta);
+    }
+    
+    void vaciarMazo() {
+        mazo.vaciar();
+    }
+    
+    int calcularPuntaje() {
+        puntaje = mazo.puntaje();
+        return puntaje;
+    }
+};
+
+class Casa{
+   private:
+   Mazo mazo; //La casa inicia con un mazo vacío
+   int puntaje;
+   
+   public:
+   Casa(){
+       mazo.vaciar();
+       puntaje = 0;
+   }
+    void print(){
+        cout<<"- - - - - - - - - - - - -"<<endl;
+        cout<<"Cartas de la casa: ";
+        mazo.print();
+        cout<<"El puntaje de la casa es: "<<puntaje<<endl;
+    }
+   Mazo get_mazo(){
+       return mazo;
+   }
+   int get_puntaje(){
+       return puntaje;
+   }
+    void setPuntaje(int nuevoPuntaje) {
+        puntaje = nuevoPuntaje;
+    }
+
+    void addCartaAMazo(string carta) {
+        mazo.add(carta);
+    }
+
+    void vaciarMazo() {
+        mazo.vaciar();
+    }
+
+    int calcularPuntaje() {
+        puntaje = mazo.puntaje();
+        return puntaje;
+    }
+};
+
+void jugar(Mazo &mazo, Jugador &juga, Casa &casa){ //Función que inicia el juego
+    int apuesta = 0;
+    if (juga.get_fichas() == 0){ // Se acaba el juego si te quedaste sin fichas
+        cout<<"No te quedan más fichas, gracias por jugar."<<endl;
+        return;
+    }
+    if (mazo.get_size() < 20){ // Si hay poquitas cartas se cambia de mazo antes de empezar el juego
+        cout<< "Mezclando un nuevo mazo..."<<endl;
+        Mazo n_mazo(52, true);
+        mazo = n_mazo;
+    }
+    // El jugador recibe la primera carta del mazo
+    juga.addCartaAMazo(mazo.remover());
+    juga.print();
+
+    // Establecer la apuesta 
+    cout<<"- - - - - - - - - - - - -"<<endl;
+    cout<<"Actualmente tienes "<<juga.get_fichas()<<" fichas. ¿Cuántas deseas apostar?"<<endl;
+    cin>>apuesta;
+    while (apuesta > juga.get_fichas() || apuesta == 0){ 
+        cout<<"Apuesta inválida, debes apostar al menos una ficha y no más de las que tienes. Inserta una nueva apuesta: "<<endl;
+        cin>>apuesta;
+    }
+    
+    //El jugador recibe más cartas
+    juga.addCartaAMazo(mazo.remover());
+    juga.calcularPuntaje();
+    juga.print();
+    string com = ""; //Se guarda la decisión del jugador de seguir o plantarse
+    cout<<"¿Desea seguir o plantarse? (seguir/plantarse)"<<endl;
+    cin>> com; 
+    while (com != "seguir" && com != "plantarse"){ //Si el comando es inválido pide otro
+        cout<<"Comando incorrecto. ¿Desea seguir o plantarse? (seguir/plantarse)"<<endl;
+        cin>>com;
+    }
+    while (com == "seguir" && juga.get_puntaje()<22){ // Sacar cartas hasta que el jugador deje de seguir o se pase de 21
+            juga.addCartaAMazo(mazo.remover());
+            juga.calcularPuntaje();
+            juga.print();
+            cout<<"¿Desea seguir o plantarse? (seguir/plantarse)"<<endl;
+            cin>> com;
+    }
+    
+    // Condiciones de pérdida
+    if (juga.get_puntaje() > 21){
+        juga.setFichas(juga.get_fichas()-apuesta);
+        cout<<"¡Te pasaste de 21!"<<endl;
+        cout<<"Ahora tienes "<<juga.get_fichas()<<" fichas"<<endl;
+        apuesta = 0;
+        juga.vaciarMazo();
+        juga.setPuntaje(0);
+        casa.vaciarMazo();
+        casa.setPuntaje(0);
+        return;
+    }
+    
+    //El turno de la casa
+    juga.print();
+    casa.addCartaAMazo(mazo.remover());
+    casa.calcularPuntaje();
+    casa.print();
+    while(casa.get_puntaje() < juga.get_puntaje()){ 
+        if (casa.get_puntaje()>16 && casa.get_puntaje()<19 && rand()%2 == 1){ // Si el puntaje está entre 16 y 19 la casa tiene 50% de plantarse
+             break;
+        }
+        this_thread::sleep_for(1s);
+        cout<<"La casa decide sacar otra carta..."<<endl;
+        casa.addCartaAMazo(mazo.remover());
+        casa.calcularPuntaje();
+        casa.print();
+    }
+    juga.print();
+    
+    //¿Quién ganó?
+    if (juga.get_puntaje() > casa.get_puntaje() || casa.get_puntaje() > 21){
+        juga.setFichas(juga.get_fichas()+apuesta);
+        cout<<"¡Ganaste!"<<endl;
+        cout<<"Ahora tienes "<<juga.get_fichas()<<" fichas"<<endl;
+        apuesta = 0;
+        juga.vaciarMazo();
+        juga.setPuntaje(0);
+        casa.vaciarMazo();
+        casa.setPuntaje(0);
+        return;
+    }else{
+        juga.setFichas(juga.get_fichas()-apuesta);
+        cout<<"¡Perdiste!"<<endl;
+        cout<<"Ahora tienes "<<juga.get_fichas()<<" fichas"<<endl;
+        apuesta = 0;
+        juga.vaciarMazo();
+        juga.setPuntaje(0);
+        casa.vaciarMazo();
+        casa.setPuntaje(0);
+        return;
+    }
+}
+
+void sesion(Mazo &mazo, Jugador &juga, Casa &casa){
+    string com = ""; // Variable para comandos
+    cout<<"¿Desea jugar una partida de 21? (y/n)";
+    cin>>com;
+    while (com != "y" && com != "n" && com != "Y" && com != "N"){ //Verificar si sí es un comando válido
+        cout<<"Comando incorrecto. ¿Desea jugar una partida de 21? ('y' si sí o 'n' si no)";
+        cin>>com;
+    }
+    while (com == "y" || com == "Y"){ //Jugar hasta que el jugador diga que no
+        com = "";
+        jugar(mazo, juga, casa);
+        cout<<"¿Desea jugar otra partida de 21? (y/n)"<<endl;
+        cin>>com;
+        while (com != "y" && com != "n" && com != "Y" && com != "N"){ //Verificar si sí es un comando válido
+            cout<<"Comando incorrecto. ¿Desea jugar otra partida de 21? ('y' si sí o 'n' si no)";
+            cin>>com;
+        }
+    }
+    cout<<"Tu número final de fichas es: "<<juga.get_fichas()<<endl;
+    cout<<"¡Gracias por jugar!"<<endl;
+}
 int main() {
-    Mazo m(0, true);
-    m.add("AC");
-    m.add("10T");
-    m.add("3P");
-    m.print();
-    cout<<"Puntaje: "<<m.puntaje();
+    srand (time(NULL)); // Se establece una semilla aleatoria
+    Mazo m(52, true);
+    Jugador j;
+    Casa c;
+    sesion(m, j, c);
     return 0;
 }
