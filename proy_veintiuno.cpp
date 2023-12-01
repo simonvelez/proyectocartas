@@ -1,6 +1,4 @@
-/* 
-
-Proyecto - 21
+/* Proyecto - 21
 
 Valeria Arce
 Juliana Contreras
@@ -8,10 +6,7 @@ Santiago Jorigua
 Simón Vélez
 
 Algoritmos y Estructuras de Datos
-Universidad del Rosario, 2023
-
-*/
-
+Universidad del Rosario, 2023 */
 
 #include<iostream>
 #include <chrono>
@@ -478,11 +473,6 @@ void jugar(Mazo &mazo, Jugador &juga, Casa &casa){ //Función que inicia el jueg
         cout<<"No te quedan más fichas, gracias por jugar."<<endl;
         return;
     }
-    if (mazo.get_size() < 20){ // Si hay poquitas cartas se cambia de mazo antes de empezar el juego
-        cout<< "Mezclando un nuevo mazo..."<<endl;
-        Mazo n_mazo(52, true);
-        mazo = n_mazo;
-    }
     // El jugador recibe la primera carta del mazo
     juga.addCartaAMazo(mazo.remover());
     juga.print();
@@ -491,7 +481,11 @@ void jugar(Mazo &mazo, Jugador &juga, Casa &casa){ //Función que inicia el jueg
     cout<<"- - - - - - - - - - - - -"<<endl;
     cout<<"Actualmente tienes "<<juga.get_fichas()<<" fichas. ¿Cuántas deseas apostar?"<<endl;
     cin>>apuesta;
-    while (apuesta > juga.get_fichas() || apuesta == 0){ 
+    while (apuesta > juga.get_fichas() || apuesta == 0){
+        // Reinicia el cin 
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+        
         cout<<"Apuesta inválida, debes apostar al menos una ficha y no más de las que tienes. Inserta una nueva apuesta: "<<endl;
         cin>>apuesta;
     }
@@ -513,6 +507,10 @@ void jugar(Mazo &mazo, Jugador &juga, Casa &casa){ //Función que inicia el jueg
             juga.print();
             cout<<"¿Desea seguir o plantarse? (seguir/plantarse)"<<endl;
             cin>> com;
+            while (com != "seguir" && com != "plantarse"){
+                cout<<"Comando incorrecto. ¿Desea seguir o plantarse? (seguir/plantarse)"<<endl;
+                cin>>com;
+            }
     }
     
     // Condiciones de pérdida
@@ -537,8 +535,8 @@ void jugar(Mazo &mazo, Jugador &juga, Casa &casa){ //Función que inicia el jueg
         if (casa.get_puntaje()>16 && casa.get_puntaje()<19 && rand()%2 == 1){ // Si el puntaje está entre 16 y 19 la casa tiene 50% de plantarse
              break;
         }
-        this_thread::sleep_for(1s);
         cout<<"La casa decide sacar otra carta..."<<endl;
+        this_thread::sleep_for(1s);
         casa.addCartaAMazo(mazo.remover());
         casa.calcularPuntaje();
         casa.print();
@@ -569,7 +567,7 @@ void jugar(Mazo &mazo, Jugador &juga, Casa &casa){ //Función que inicia el jueg
     }
 }
 
-void sesion(Mazo &mazo, Jugador &juga, Casa &casa){
+void sesion(Jugador &juga, Casa &casa){
     string com = ""; // Variable para comandos
     cout<<"¿Desea jugar una partida de 21? (y/n)";
     cin>>com;
@@ -577,8 +575,11 @@ void sesion(Mazo &mazo, Jugador &juga, Casa &casa){
         cout<<"Comando incorrecto. ¿Desea jugar una partida de 21? ('y' si sí o 'n' si no)";
         cin>>com;
     }
+    cout<<"Jugar sin control causa adicción, el juego es entretenimiento, juega con moderación. Prohibida la venta a menores de edad."<<endl;
     while (com == "y" || com == "Y"){ //Jugar hasta que el jugador diga que no
         com = "";
+        cout<< "Mezclando un nuevo mazo..."<<endl;
+        Mazo mazo(52, true);
         jugar(mazo, juga, casa);
         cout<<"¿Desea jugar otra partida de 21? (y/n)"<<endl;
         cin>>com;
@@ -592,9 +593,8 @@ void sesion(Mazo &mazo, Jugador &juga, Casa &casa){
 }
 int main() {
     srand (time(NULL)); // Se establece una semilla aleatoria
-    Mazo m(52, true);
     Jugador j;
     Casa c;
-    sesion(m, j, c);
+    sesion(j, c);
     return 0;
 }
